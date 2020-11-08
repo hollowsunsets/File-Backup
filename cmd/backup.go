@@ -37,7 +37,11 @@ var backupCmd = &cobra.Command{
 		} else {
 			directoryName, bucketName = args[0], args[1]
 		}
-		findDirectory(directoryName, bucketName)
+		err := findDirectory(directoryName, bucketName)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	},
 }
 
@@ -50,7 +54,10 @@ func findDirectory(directoryName string, bucketName string) error {
 				return err
 			}
 			fmt.Println(path, info.Size())
-			uploadFile(directoryName, bucketName)
+			err = uploadFile(path, bucketName)
+			if err != nil {
+				return err
+			}
 			return nil
 		},
 	)
@@ -63,14 +70,16 @@ func uploadFile(fileName string, bucketName string) error {
 
 	f, err := os.Open(fileName)
 	if err != nil {
-		return fmt.Errorf("unable to open file: %s", fileName)
+		fmt.Println("Error opening file")
+		return fmt.Errorf("error opening file %s: \"%s\"", fileName, err)
 	}
-
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bucketName),
 		Body: f,
 	})
-
-	fmt.Printf("file uploaded to, %s\n\n", aws.StringValue(&result.Location))
+	if err != nil {
+		return fmt.Errorf("error uploading file to bucket %s: \"%s\"", bucketName, err)
+	}
+	fmt.Printf("file uploaded to, %s\n\n", result.Location)
 	return nil
 }
