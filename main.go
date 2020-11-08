@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/hollowsunsets/FileBackup/cmd"
+	"github.com/hollowsunsets/fcopy/cmd"
 	"os"
 )
 
