@@ -8,8 +8,8 @@ import (
 
 
 var (
-	directoryName string
-	bucketName string
+	dirNameArg string
+	bucketNameArg string
 	rootCmd = &cobra.Command{
 		Use: "fcopy",
 		Short: "fcopy is a CLI for that manages file backups and restores in AWS S3.",
@@ -29,8 +29,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&directoryName, "directory", "", "Name of file directory")
-	rootCmd.PersistentFlags().StringVar(&bucketName, "bucket", "", "Name of AWS S3 bucket")
+	rootCmd.PersistentFlags().StringVar(&dirNameArg, "directory", "", "Name of file directory")
+	rootCmd.PersistentFlags().StringVar(&bucketNameArg, "bucket", "", "Name of AWS S3 bucket")
 	rootCmd.AddCommand(backupCmd)
 	rootCmd.AddCommand(restoreCmd)
 }
