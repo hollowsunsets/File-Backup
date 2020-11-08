@@ -12,3 +12,8 @@ This program recursively traverses the files of a directory and makes a backup t
 > restore bucket_name directory_name
 ```
 
+## Usage
+
+```
+export AWS_PROFILE=<profile>
+```
