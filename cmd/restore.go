@@ -5,8 +5,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
-
 var restoreCmd = &cobra.Command{
 	Use: "restore",
 	Short: "Restore a file directory",

@@ -23,3 +23,11 @@ go install github.com/hollowsunsets/fcopy
 ```
 export AWS_PROFILE=<profile>
 ```
+
+
+
+## Notes
+
+
+S3 objects will have an etag that is not an MD5 digest if they are uploaded as multipart files.
+See https://stackoverflow.com/questions/12186993/what-is-the-algorithm-to-compute-the-amazon-s3-etag-for-a-file-larger-than-5gb for more information.
