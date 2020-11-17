@@ -22,6 +22,7 @@ go install github.com/hollowsunsets/fcopy
 
 ```
 export AWS_PROFILE=<profile>
+export AWS_REGION=us-east-1
 ```
 
 

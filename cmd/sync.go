@@ -83,6 +83,7 @@ func backupWillNotChange(info os.FileInfo, bucketName string, fileName string) (
 	return false, nil
 }
 
+
 func matchObjectMD5Sum(object *s3.GetObjectOutput, metadata *s3.HeadObjectOutput, fileMD5 string) (bool, error) {
 	// Case: Native S3 entity tag exists, which may be an MD5 digest.
 	// 		 If the object was uploaded in multiple parts, it will not have an MD5 digest.

@@ -94,3 +94,7 @@ func CreateBucket(bucketName string) error {
 	}
 	return nil
 }
+
+func ObjectMD5Checksum(object *s3.GetObjectOutput) (string, error) {
+	return "", nil
+}

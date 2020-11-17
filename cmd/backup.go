@@ -86,16 +86,15 @@ func uploadFile(fileName string, bucketName string, modTime time.Time) error {
 	if ok := utils.BucketExists(bucketName); !ok {
 		err := utils.CreateBucket(bucketName)
 		if err != nil {
-			return err
+			return fmt.Errorf("error creating bucket %s: \"%s\"", bucketName, err)
 		}
 	}
 	metadata, err := utils.GetObjectMetadata(bucketName, fileName)
-
-	if err != nil {
-		return err
-	}
-	if modTime.After(*metadata.LastModified) {
-		return nil
+	if err == nil {
+		if !modTime.After(*metadata.LastModified) {
+			fmt.Printf("file %s has not been updated, no need to backup", fileName)
+			return nil
+		}
 	}
 
 	input := &s3manager.UploadInput{
