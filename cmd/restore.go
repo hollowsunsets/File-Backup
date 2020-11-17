@@ -91,10 +91,10 @@ func downloadBucket(directoryName string, bucketName string) error {
 		return err
 	}
 	for _, object := range bucketObjects.Contents {
-		filename := filepath.Join(directoryName, *object.Key)
+		filename := filepath.Join(directoryName, filepath.Base(*object.Key))
 		f, err := os.Create(filename)
 		if err != nil {
-			return fmt.Errorf("failed to create file %q, %v", filename, err)
+			return fmt.Errorf("error creating file %q, %v", filename, err)
 		}
 
 		_, err = downloader.Download(f, &s3.GetObjectInput{
@@ -102,8 +102,10 @@ func downloadBucket(directoryName string, bucketName string) error {
 			Key:	aws.String(filename),
 		})
 		if err != nil {
-			return fmt.Errorf("failed to download file %q, %v", filename, err)
+			return fmt.Errorf("error downloading file %q, %v", filename, err)
 		}
+
+		fmt.Printf("file %s restored to version %s\n", *object.Key, *object.LastModified)
 	}
 	return nil
 }

@@ -92,7 +92,7 @@ func uploadFile(fileName string, bucketName string, modTime time.Time) error {
 	metadata, err := utils.GetObjectMetadata(bucketName, fileName)
 	if err == nil {
 		if !modTime.After(*metadata.LastModified) {
-			fmt.Printf("file %s has not been updated, no need to backup", fileName)
+			fmt.Printf("file %s has not been updated, no need to backup\n", fileName)
 			return nil
 		}
 	}
