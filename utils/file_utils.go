@@ -40,6 +40,7 @@ func FileMD5Checksum(file* os.File) (string, error) {
 }*/
 
 func ObjectMD5Checksum(object *s3.GetObjectOutput) (string, error) {
+
 	return "", nil
 }
 

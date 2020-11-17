@@ -2,7 +2,14 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 )
 
 var restoreCmd = &cobra.Command{
@@ -26,14 +33,77 @@ var restoreCmd = &cobra.Command{
 		} else {
 			directoryName, bucketName = args[0], args[1]
 		}
-		downloadBucket(directoryName, bucketName)
+		err := clearDirectory(directoryName)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		err = downloadBucket(directoryName, bucketName)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	},
 }
 
-func downloadBucket(directoryName string, bucketName string) {
+
+
+func clearDirectory(directoryName string) error {
+	dir, err := os.Open(directoryName)
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+	names, err := dir.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(directoryName, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func listBucketItems(bucketName string) (*s3.ListObjectsOutput, error) {
+	sess := session.Must(session.NewSession())
+	svc := s3.New(sess)
+	input := &s3.ListObjectsInput{
+		Bucket:  aws.String(bucketName),
+	}
+
+	result, err := svc.ListObjects(input)
+	if err != nil {
+		return nil, err
+	}
+	return result, err
 
 }
 
-func restoreDirectory(directoryName string, bucketName string) {
+func downloadBucket(directoryName string, bucketName string) error {
+	sess := session.Must(session.NewSession())
+	downloader := s3manager.NewDownloader(sess)
 
+	bucketObjects, err := listBucketItems(bucketName)
+	if err != nil {
+		return err
+	}
+	for _, object := range bucketObjects.Contents {
+		filename := filepath.Join(directoryName, *object.Key)
+		f, err := os.Create(filename)
+		if err != nil {
+			return fmt.Errorf("failed to create file %q, %v", filename, err)
+		}
+
+		_, err = downloader.Download(f, &s3.GetObjectInput{
+			Bucket: aws.String(bucketName),
+			Key:	aws.String(filename),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to download file %q, %v", filename, err)
+		}
+	}
+	return nil
 }
