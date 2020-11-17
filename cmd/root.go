@@ -16,7 +16,10 @@ var (
 		Long: `fcopy is a CLI that can upload and retrieve backups of file directories 
 to and from a bucket in Amazon's Simple Storage Service (AWS S3).`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Hello CLI")
+			if len(args) == 0 {
+				cmd.Help()
+				os.Exit(0)
+			}
 		},
 	}
 )

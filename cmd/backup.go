@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -21,13 +20,17 @@ func init() {
 var backupCmd = &cobra.Command{
 	Use: "backup",
 	Short: "Backup a file directory",
-	Long: "Longer description here",
+	Long: `Backup a local file directory to a AWS S3 bucket.
+Ex: fcopy backup <directory_name> <bucket_name>
+    fcopy backup --bucket <bucket_name> --directory <directory_name>
+If no S3 bucket named <bucket_name> exists, a new S3 bucket named <bucket_name> will be created.`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if dirNameArg != "" && bucketNameArg != "" {
 			return nil
 		}
 		if len(args) < 2 {
-			return errors.New("directory name and bucket name required")
+			cmd.Help()
+			os.Exit(0)
 		}
 		return nil
 	},

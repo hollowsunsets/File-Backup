@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -15,13 +14,17 @@ import (
 var restoreCmd = &cobra.Command{
 	Use: "restore",
 	Short: "Restore a file directory",
-	Long: "Longer description here",
+	Long: `Restore and replace a local file directory from a given AWS S3 bucket.
+Ex: fcopy restore <bucket_name> <directory_name>
+    fcopy restore --bucket <bucket_name> --directory <directory_name>
+If no directory with the name <directory_name> exists, a new directory will be created.`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if dirNameArg != "" && bucketNameArg != "" {
 			return nil
 		}
 		if len(args) < 2 {
-			return errors.New("directory name and bucket name required")
+			cmd.Help()
+			os.Exit(0)
 		}
 		return nil
 	},
@@ -31,14 +34,20 @@ var restoreCmd = &cobra.Command{
 		if dirNameArg != "" && bucketNameArg != "" {
 			directoryName, bucketName = dirNameArg, bucketNameArg
 		} else {
-			directoryName, bucketName = args[0], args[1]
+			directoryName, bucketName = args[1], args[0]
 		}
-		err := clearDirectory(directoryName)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+
+		if _, err := os.Stat(directoryName); os.IsNotExist(err) {
+			os.MkdirAll(directoryName, os.ModePerm)
+		} else {
+			err := clearDirectory(directoryName)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
 		}
-		err = downloadBucket(directoryName, bucketName)
+
+		err := downloadBucket(directoryName, bucketName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -96,6 +105,7 @@ func downloadBucket(directoryName string, bucketName string) error {
 		if err != nil {
 			return fmt.Errorf("error creating file %q, %v", filename, err)
 		}
+
 
 		_, err = downloader.Download(f, &s3.GetObjectInput{
 			Bucket: aws.String(bucketName),
