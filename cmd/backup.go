@@ -39,6 +39,13 @@ var backupCmd = &cobra.Command{
 		} else {
 			directoryName, bucketName = args[0], args[1]
 		}
+
+		// If the given directory doesn't exist
+		if _, err := os.Stat(directoryName); os.IsNotExist(err) {
+			fmt.Printf("given directory %s does not exist\n", directoryName)
+			os.Exit(1)
+		}
+
 		err := backupDirectory(directoryName, bucketName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -46,7 +53,6 @@ var backupCmd = &cobra.Command{
 		}
 	},
 }
-
 
 func backupDirectory(directoryName string, bucketName string) error {
 	// Walks the given file tree in lexical order
@@ -77,7 +83,14 @@ func uploadFile(fileName string, bucketName string, modTime time.Time) error {
 	}
 	defer f.Close()
 
+	if ok := utils.BucketExists(bucketName); !ok {
+		err := utils.CreateBucket(bucketName)
+		if err != nil {
+			return err
+		}
+	}
 	metadata, err := utils.GetObjectMetadata(bucketName, fileName)
+
 	if err != nil {
 		return err
 	}

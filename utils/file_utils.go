@@ -35,15 +35,6 @@ func FileMD5Checksum(file* os.File) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-/* func ComputeS3ETag(file *os.File) (string, error) {
-
-}*/
-
-func ObjectMD5Checksum(object *s3.GetObjectOutput) (string, error) {
-
-	return "", nil
-}
-
 func GetObject(bucketName string, fileName string) (*s3.GetObjectOutput, error) {
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess)
@@ -75,4 +66,31 @@ func GetObjectMetadata(bucketName string, fileName string) (*s3.HeadObjectOutput
 
 func ObjectIsMultipart(etag string) bool {
 	return len([]rune(etag)) != 32 && strings.HasSuffix(etag,"-#")
+}
+
+func BucketExists(bucketName string) bool {
+	sess := session.Must(session.NewSession())
+	svc := s3.New(sess)
+	input := &s3.HeadBucketInput{
+		Bucket: aws.String(bucketName),
+	}
+	_, err := svc.HeadBucket(input)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func CreateBucket(bucketName string) error {
+	sess := session.Must(session.NewSession())
+	svc := s3.New(sess)
+	input := &s3.CreateBucketInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	_, err := svc.CreateBucket(input)
+	if err != nil {
+		return err
+	}
+	return nil
 }
